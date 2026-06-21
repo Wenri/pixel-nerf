@@ -29,3 +29,4 @@ eval_out/
 nohup.out
 /log*.txt
 /eval/eval
+/.release_build/

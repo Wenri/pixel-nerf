@@ -28,9 +28,9 @@ Alternatively use `pip -r requirements.txt`.
 https://s3.eu-central-1.amazonaws.com/avg-projects/differentiable_volumetric_rendering/data/NMR_Dataset.zip
 (Hosted by DVR authors)
     - For novel-category generalization experiment, a custom split is needed.
-      Download the following script:
-      https://drive.google.com/file/d/1Uxf0GguAUTSFIDD_7zuPbxk1C9WgXjce/view?usp=sharing
-      place the said file under `NMR_Dataset` and run `python genlist.py` in the said directory.
+      Copy the script `scripts/genlist.py` (tracked in this repo; originally from
+      [Google Drive](https://drive.google.com/file/d/1Uxf0GguAUTSFIDD_7zuPbxk1C9WgXjce/view?usp=sharing))
+      under `NMR_Dataset` and run `python genlist.py` in the said directory.
       This generates train/val/test lists for the experiment. Note for evaluation performance reasons,
       test is only 1/4 of the unseen categories.
 
@@ -46,6 +46,59 @@ While we could have used a common data format, we chose to keep
 DTU and ShapeNet (NMR) datasets in DVR's format and SRN data in the original SRN format.
 Our own two-object data is in NeRF's format.
 Data adapters are built into the code.
+
+## Download from GitHub Releases (mirror)
+
+For convenience, the datasets and pretrained weights above are mirrored as **release assets on
+this fork** (originally hosted on the authors' Google Drive). The ShapeNet NMR dataset is large
+and unchanged, so it is still fetched from AWS (link above) and is *not* mirrored here.
+
+> Note: on a fork the **Releases** tab is often hidden in the GitHub web UI, but the direct
+> download URLs and `gh release download -R Wenri/pixel-nerf <tag>` work normally.
+
+Easiest path — the helper script (`curl` + `unzip` required, no auth):
+```sh
+scripts/download_data.sh --what all              # datasets -> ./data , weights -> ./checkpoints
+scripts/download_data.sh --what data --dest /path/to/data
+scripts/download_data.sh --what weights          # -> ./checkpoints
+```
+It downloads, verifies `SHA256SUMS`, extracts, and prints the `-D` paths to use.
+
+The SRN `cars`/`chairs` archives are **repacked per split** (`*_train`/`*_val`/`*_test`) so every
+asset stays under GitHub's 2 GiB limit — **no reassembly needed**. Extract all splits of a
+dataset into the *same* directory, then point `-D` at the prefix (e.g. extract the three
+`chairs_*.zip` into `srn_chairs/`, then `-D srn_chairs/chairs`).
+
+**Datasets** — release [`data-v1`](https://github.com/Wenri/pixel-nerf/releases/tag/data-v1)
+(base `https://github.com/Wenri/pixel-nerf/releases/download/data-v1/`):
+
+| Asset(s) | Extract into | `-D` to pass |
+|---|---|---|
+| `chairs_train.zip` `chairs_val.zip` `chairs_test.zip` | one dir → `chairs_{train,val,test}/` | `<dir>/chairs` |
+| `cars_train.zip` `cars_val.zip` `cars_test.zip` | one dir → `cars_{train,val,test}/` | `<dir>/cars` |
+| `dtu_dataset.zip` | → `rs_dtu_4/` | `<dir>/rs_dtu_4` |
+| `multi_chair_train.zip` `multi_chair_val.zip` `multi_chair_test.zip` | one parent → `train/ val/ test/` | the parent dir |
+| `eval_out.zip` | DTU eval renderings (1/3/6/9-view), optional | — |
+| `SHA256SUMS` | `sha256sum -c SHA256SUMS --ignore-missing` | — |
+
+**Pretrained weights** — release [`weights-v1`](https://github.com/Wenri/pixel-nerf/releases/tag/weights-v1)
+(base `.../releases/download/weights-v1/`):
+
+| Asset | Extract into |
+|---|---|
+| `pixel_nerf_weights.zip` | `checkpoints/` → `sn64/ sn64_unseen/ srn_car/ srn_chair/ dtu/` |
+| `multi_chair_1v_checkpoint.zip` | `checkpoints/` (multi-chair 1-view) |
+| `multi_chair_2v_checkpoint.zip` | `checkpoints/` (multi-chair 2-view) |
+| `SHA256SUMS` | verify only |
+
+Manual example (no script):
+```sh
+B=https://github.com/Wenri/pixel-nerf/releases/download
+mkdir srn_chairs && cd srn_chairs
+for a in chairs_train.zip chairs_val.zip chairs_test.zip SHA256SUMS; do curl -fLO "$B/data-v1/$a"; done
+sha256sum -c SHA256SUMS --ignore-missing
+for z in chairs_*.zip; do unzip -q "$z"; done    # -> chairs_{train,val,test}; use -D srn_chairs/chairs
+```
 
 # Running the model (video generation)
 
