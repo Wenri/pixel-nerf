@@ -119,6 +119,12 @@ if has_output:
         lines = [x for x in lines if len(x) == 4]
         finished = set([x[0] for x in lines])
         total_psnr = sum((float(x[1]) for x in lines))
+
+        psnr_modify=np.array([float(x[1]) for x in lines])
+        err_modify=np.power(psnr_modify/10,10)
+        errM=sum(float(1/x) for x in err_modify)
+        total_psnr=10*np.log10(1/errM)
+
         total_ssim = sum((float(x[2]) for x in lines))
         cnt = sum((int(x[3]) for x in lines))
         if cnt > 0:

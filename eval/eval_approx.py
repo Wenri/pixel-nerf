@@ -23,7 +23,8 @@ from data import get_split_dataset
 from render import NeRFRenderer
 from model import make_model
 import tqdm
-
+from skimage.metrics import structural_similarity as compare_ssim
+from skimage.metrics import peak_signal_noise_ratio as compare_psnr
 
 def extra_args(parser):
     parser.add_argument(

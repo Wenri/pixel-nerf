@@ -22,3 +22,10 @@ __pycache__/
 checkpoints/
 visuals/
 logs/
+
+# Datasets, eval output, and run artifacts (not for version control)
+ds/
+eval_out/
+nohup.out
+/log*.txt
+/eval/eval
